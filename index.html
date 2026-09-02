@@ -116,48 +116,55 @@
       text-align: center;
       padding: 30px;
     }
+
+    .error {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
   </style>
 </head>
 
 <body>
 
-  <h2>🛒 Grocery Store</h2>
+<h2>🛒 Grocery Store</h2>
 
-  <div class="search">
-    <input id="searchInput" placeholder="Search milk, bread, rice..." />
-    <button onclick="searchProducts()">Search</button>
-  </div>
+<div class="search">
+  <input id="searchInput" placeholder="Search milk, bread, rice..." />
+  <button onclick="searchProducts()">Search</button>
+</div>
 
-  <div id="products">
-    <div class="loading">Search for a product 🔎</div>
-  </div>
+<div id="products">
+  <div class="loading">Search for a product 🔎</div>
+</div>
 
-  <div class="cart" onclick="showCart()">
-    🛒 Cart: <span id="cartCount">0</span> items
-  </div>
+<div class="cart" onclick="showCart()">
+  🛒 Cart: <span id="cartCount">0</span> items
+</div>
 
 <script>
 
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const API =
-  "https://grocery-backend-qhoe.onrender.com/search";
+const API = "https://grocery-backend-qhoe.onrender.com/search";
 
 let cart = [];
 
 async function searchProducts() {
 
-  const query =
-    document.getElementById("searchInput").value.trim();
+  const query = document
+    .getElementById("searchInput")
+    .value
+    .trim();
 
   if (!query) {
     alert("Product name enter karo");
     return;
   }
 
-  const container =
-    document.getElementById("products");
+  const container = document.getElementById("products");
 
   container.innerHTML =
     '<div class="loading">Searching... 🔎</div>';
@@ -168,62 +175,115 @@ async function searchProducts() {
       API +
       "?q=" +
       encodeURIComponent(query) +
-      "&lat=23.2599&lon=77.4126";
+      "&lat=23.2599" +
+      "&lon=77.4126";
+
+    console.log("API URL:", url);
 
     const response = await fetch(url);
 
+    console.log("HTTP Status:", response.status);
+
     const data = await response.json();
 
-    if (!data.products || data.products.length === 0) {
+    console.log("API Response:", data);
+
+    /*
+      API response me products directly mil rahe hain.
+      Kuch API responses me products ke andar data bhi ho sakta hai,
+      isliye dono possibilities handle kar rahe hain.
+    */
+
+    let products = [];
+
+    if (Array.isArray(data.products)) {
+      products = data.products;
+    }
+
+    else if (
+      data.data &&
+      Array.isArray(data.data.products)
+    ) {
+      products = data.data.products;
+    }
+
+    console.log("Products found:", products.length);
+
+    if (products.length === 0) {
+
       container.innerHTML =
-        "<div class='loading'>Product nahi mila 😔</div>";
+        '<div class="error">' +
+        'Product nahi mila 😔<br><br>' +
+        '<small>API response mila hai, lekin products list empty hai.</small>' +
+        '</div>';
+
       return;
     }
 
     container.innerHTML = "";
 
-    data.products.forEach(product => {
+    products.forEach(product => {
 
-      const div =
-        document.createElement("div");
+      const div = document.createElement("div");
 
       div.className = "product";
 
+      const image =
+        product.images &&
+        product.images.length
+        ? product.images[0]
+        : "";
+
+      const name =
+        product.name || "Unknown Product";
+
+      const brand =
+        product.brand || "";
+
+      const quantity =
+        product.quantity || "";
+
+      const price =
+        product.offer_price || product.mrp || "0";
+
+      const mrp =
+        product.mrp || "";
+
       div.innerHTML = `
 
-        <img src="${product.images?.[0] || ''}"
-             onerror="this.style.display='none'">
+        <img
+          src="${image}"
+          onerror="this.style.display='none'"
+        >
 
         <div class="info">
 
           <div class="name">
-            ${product.name}
+            ${name}
           </div>
 
           <div class="brand">
-            ${product.brand || ""}
+            ${brand}
           </div>
 
           <div>
-            <small>
-              ${product.quantity || ""}
-            </small>
+            <small>${quantity}</small>
           </div>
 
           <div class="price">
-            ₹${product.offer_price}
+            ₹${price}
 
             ${
-              product.mrp &&
-              product.mrp != product.offer_price
-              ? `<span class="old">₹${product.mrp}</span>`
+              mrp && mrp != price
+              ? `<span class="old">₹${mrp}</span>`
               : ""
             }
           </div>
 
           <button
             class="add"
-            onclick='addToCart(${JSON.stringify(product)})'>
+            onclick='addToCart(${JSON.stringify(product).replace(/'/g, "&apos;")})'
+          >
             Add
           </button>
 
@@ -234,12 +294,19 @@ async function searchProducts() {
 
     });
 
-  } catch (error) {
+  }
+
+  catch (error) {
+
+    console.error("ERROR:", error);
 
     container.innerHTML =
-      "<div class='loading'>Something went wrong ❌</div>";
-
-    console.log(error);
+      '<div class="error">' +
+      'API connection error ❌<br><br>' +
+      '<small>' +
+      error.message +
+      '</small>' +
+      '</div>';
   }
 }
 
@@ -256,16 +323,23 @@ function addToCart(product) {
   } else {
 
     cart.push({
-      id: product.id,
-      name: product.name,
-      price: Number(product.offer_price),
-      qty: 1,
-      deeplink: product.deeplink
-    });
 
+      id: product.id,
+
+      name: product.name,
+
+      price: Number(product.offer_price || product.mrp || 0),
+
+      qty: 1,
+
+      deeplink: product.deeplink || ""
+
+    });
   }
 
   updateCart();
+
+  alert("Added to cart 🛒");
 
 }
 
@@ -288,12 +362,14 @@ function showCart() {
   if (cart.length === 0) {
 
     alert("Cart empty hai 🛒");
-    return;
 
+    return;
   }
 
   let total = 0;
-  let message = "🛒 YOUR CART\n\n";
+
+  let message =
+    "🛒 YOUR CART\n\n";
 
   cart.forEach(item => {
 
@@ -303,13 +379,17 @@ function showCart() {
     total += amount;
 
     message +=
-      `${item.name}\n` +
-      `Qty: ${item.qty} × ₹${item.price}\n\n`;
-
+      item.name +
+      "\nQty: " +
+      item.qty +
+      " × ₹" +
+      item.price +
+      "\n\n";
   });
 
   message +=
-    `Total: ₹${total.toFixed(2)}`;
+    "Total: ₹" +
+    total.toFixed(2);
 
   alert(message);
 }
