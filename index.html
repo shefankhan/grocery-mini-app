@@ -1,537 +1,969 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grocery Store</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grocery Store</title>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 15px;
-      background: #f5f5f5;
-    }
+body{
+  margin:0;
+  background:#f5f5f5;
+  color:#222;
+}
 
-    h2 {
-      margin-top: 5px;
-    }
+header{
+  background:#0c8f3d;
+  color:white;
+  padding:16px;
+  font-size:22px;
+  font-weight:bold;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
 
-    .search {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
+.search{
+  padding:12px;
+  background:white;
+}
 
-    input {
-      flex: 1;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
+.search input{
+  width:100%;
+  padding:13px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:16px;
+}
 
-    button {
-      border: none;
-      border-radius: 8px;
-      padding: 10px 14px;
-      cursor: pointer;
-    }
+.products{
+  padding:10px;
+  padding-bottom:90px;
+}
 
-    .search button {
-      background: #0a8f3d;
-      color: white;
-    }
+.product{
+  background:white;
+  margin-bottom:10px;
+  padding:10px;
+  border-radius:10px;
+  display:flex;
+  gap:12px;
+}
 
-    .product {
-      background: white;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 12px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
+.product img{
+  width:90px;
+  height:90px;
+  object-fit:contain;
+  border-radius:8px;
+}
 
-    .product img {
-      width: 85px;
-      height: 85px;
-      object-fit: contain;
-    }
+.info{
+  flex:1;
+}
 
-    .info {
-      flex: 1;
-    }
+.brand{
+  font-size:12px;
+  color:#777;
+}
 
-    .name {
-      font-weight: bold;
-      font-size: 15px;
-    }
+.name{
+  font-weight:bold;
+  margin:4px 0;
+}
 
-    .brand {
-      color: #777;
-      font-size: 13px;
-      margin-top: 4px;
-    }
+.qty{
+  font-size:13px;
+  color:#666;
+}
 
-    .price {
-      margin-top: 7px;
-      font-weight: bold;
-    }
+.price{
+  font-weight:bold;
+  font-size:18px;
+}
 
-    .old {
-      text-decoration: line-through;
-      color: #999;
-      margin-left: 6px;
-      font-weight: normal;
-    }
+.mrp{
+  text-decoration:line-through;
+  color:#999;
+  font-size:13px;
+  margin-left:5px;
+}
 
-    .add {
-      background: #0a8f3d;
-      color: white;
-      margin-top: 8px;
-    }
+button{
+  border:0;
+  border-radius:7px;
+  padding:9px 13px;
+  cursor:pointer;
+}
 
-    .cartBar {
-      position: fixed;
-      bottom: 15px;
-      left: 15px;
-      right: 15px;
-      background: #0a8f3d;
-      color: white;
-      padding: 15px;
-      border-radius: 12px;
-      text-align: center;
-      font-weight: bold;
-      cursor: pointer;
-    }
+.add{
+  background:#0c8f3d;
+  color:white;
+  margin-top:7px;
+}
 
-    #products {
-      padding-bottom: 80px;
-    }
+.cartbar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:white;
+  padding:12px;
+  box-shadow:0 -2px 10px #bbb;
+  z-index:20;
+}
 
-    .loading {
-      text-align: center;
-      padding: 30px;
-    }
+.cartbtn{
+  width:100%;
+  background:#0c8f3d;
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+}
 
-    .cartItem {
-      background: white;
-      padding: 14px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-    }
+.screen{
+  padding:15px;
+  padding-bottom:30px;
+}
 
-    .cartName {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
+.back{
+  background:#ddd;
+  margin-bottom:12px;
+}
 
-    .qty {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+.card{
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:12px;
+}
 
-    .qty button {
-      background: #eee;
-      font-size: 18px;
-      width: 38px;
-      height: 38px;
-      padding: 0;
-    }
+.cartitem{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid #eee;
+  padding:10px 0;
+}
 
-    .total {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      margin-top: 15px;
-      font-size: 18px;
-      font-weight: bold;
-    }
+.cartitem img{
+  width:60px;
+  height:60px;
+  object-fit:contain;
+}
 
-    .checkout {
-      width: 100%;
-      margin-top: 12px;
-      background: #0a8f3d;
-      color: white;
-      font-size: 17px;
-      padding: 15px;
-    }
+.cartinfo{
+  flex:1;
+}
 
-    .back {
-      background: #ddd;
-      margin-bottom: 15px;
-    }
-  </style>
+.controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.controls button{
+  background:#e8f5ed;
+  color:#087a35;
+  font-size:20px;
+  width:38px;
+  height:38px;
+  padding:0;
+  font-weight:bold;
+}
+
+.total{
+  font-size:20px;
+  font-weight:bold;
+  margin-top:12px;
+}
+
+.primary{
+  width:100%;
+  background:#0c8f3d;
+  color:white;
+  font-size:17px;
+  padding:14px;
+  font-weight:bold;
+}
+
+input, textarea, select{
+  width:100%;
+  padding:12px;
+  margin:6px 0 12px;
+  border:1px solid #ddd;
+  border-radius:7px;
+  font-size:15px;
+}
+
+label{
+  font-weight:bold;
+  font-size:14px;
+}
+
+.payment{
+  border:1px solid #ddd;
+  padding:14px;
+  border-radius:8px;
+  margin:8px 0;
+  display:block;
+}
+
+.payment input{
+  width:auto;
+  margin:0 8px 0 0;
+}
+
+.success{
+  text-align:center;
+  padding:30px 10px;
+}
+
+.success .icon{
+  font-size:65px;
+}
+
+.small{
+  color:#777;
+  font-size:13px;
+}
+</style>
 </head>
 
 <body>
 
-<div id="app">
+<header>🛒 Grocery Store</header>
 
-  <h2>🛒 Grocery Store</h2>
+<div id="app">
 
   <div class="search">
     <input
       id="searchInput"
       placeholder="Search milk, bread, rice..."
+      onkeydown="if(event.key==='Enter') searchProducts()"
     >
-    <button onclick="searchProducts()">Search</button>
   </div>
 
-  <div id="products">
-    <div class="loading">
-      Search for a product 🔎
+  <div class="products" id="products">
+    <div class="card">
+      Search for products 🔎
     </div>
   </div>
 
 </div>
 
-<div
-  class="cartBar"
-  onclick="showCart()"
->
-  🛒 Cart:
-  <span id="cartCount">0</span>
-  items
+<div class="cartbar">
+  <button class="cartbtn" onclick="showCart()">
+    🛒 Cart (<span id="cartCount">0</span>)
+  </button>
 </div>
-
 
 <script>
 
-const tg = window.Telegram.WebApp;
-
-tg.expand();
-
 const API =
-  "https://grocery-backend-qhoe.onrender.com/search";
+"https://grocery-backend-qhoe.onrender.com/search";
 
-let cart = [];
+let cart =
+JSON.parse(localStorage.getItem("cart") || "[]");
+
+let currentProducts = [];
+
+updateCartCount();
 
 
-async function searchProducts() {
+async function searchProducts(){
 
-  const query =
-    document
-      .getElementById("searchInput")
-      .value
-      .trim();
+  const q =
+  document.getElementById("searchInput").value.trim();
 
-  if (!query) {
+  if(!q) return;
 
-    alert("Product name enter karo");
+  const box =
+  document.getElementById("products");
 
-    return;
-  }
+  box.innerHTML =
+  '<div class="card">🔄 Products loading...</div>';
 
-  const container =
-    document.getElementById("products");
-
-  container.innerHTML =
-    '<div class="loading">Searching... 🔎</div>';
-
-  try {
-
-    const url =
-      API +
-      "?q=" +
-      encodeURIComponent(query) +
-      "&lat=23.2599" +
-      "&lon=77.4126";
+  try{
 
     const response =
-      await fetch(url);
+    await fetch(
+      API +
+      "?q=" + encodeURIComponent(q) +
+      "&lat=23.2599&lon=77.4126"
+    );
 
     const data =
-      await response.json();
+    await response.json();
 
-    let products = [];
+    currentProducts =
+    data.products ||
+    data.data?.products ||
+    [];
 
-    if (Array.isArray(data.products)) {
+    if(!currentProducts.length){
 
-      products = data.products;
-
-    } else if (
-      data.data &&
-      Array.isArray(data.data.products)
-    ) {
-
-      products = data.data.products;
-    }
-
-    if (products.length === 0) {
-
-      container.innerHTML =
-        '<div class="loading">Product nahi mila 😔</div>';
+      box.innerHTML =
+      '<div class="card">❌ Product nahi mila</div>';
 
       return;
     }
 
-    container.innerHTML = "";
+    box.innerHTML =
+    currentProducts.map(
+      (p,index) => productHTML(p,index)
+    ).join("");
 
-    products.forEach(product => {
-
-      const div =
-        document.createElement("div");
-
-      div.className =
-        "product";
-
-      const image =
-        product.images &&
-        product.images.length
-        ? product.images[0]
-        : "";
-
-      div.innerHTML = `
-
-        <img
-          src="${image}"
-          onerror="this.style.display='none'"
-        >
-
-        <div class="info">
-
-          <div class="name">
-            ${product.name || ""}
-          </div>
-
-          <div class="brand">
-            ${product.brand || ""}
-          </div>
-
-          <small>
-            ${product.quantity || ""}
-          </small>
-
-          <div class="price">
-
-            ₹${product.offer_price || product.mrp}
-
-            ${
-              product.mrp &&
-              product.mrp != product.offer_price
-              ? `<span class="old">
-                   ₹${product.mrp}
-                 </span>`
-              : ""
-            }
-
-          </div>
-
-          <button
-            class="add"
-            onclick='addToCart(${JSON.stringify(product)})'
-          >
-            Add
-          </button>
-
-        </div>
-      `;
-
-      container.appendChild(div);
-
-    });
-
-  } catch (error) {
-
-    container.innerHTML =
-      '<div class="loading">' +
-      'Connection error ❌' +
-      '</div>';
+  }catch(error){
 
     console.log(error);
+
+    box.innerHTML =
+    '<div class="card">❌ Server error. Thodi der baad try karo.</div>';
   }
 }
 
 
-function addToCart(product) {
+function productHTML(p,index){
 
-  const existing =
-    cart.find(
-      item => item.id === product.id
-    );
+  const image =
+  p.image ||
+  p.image_url ||
+  p.imageUrl ||
+  "";
 
-  if (existing) {
+  const name =
+  p.name || "Product";
 
-    existing.qty++;
+  const brand =
+  p.brand || "";
 
-  } else {
+  const quantity =
+  p.quantity || "";
 
-    cart.push({
+  const price =
+  p.offer_price ??
+  p.offerPrice ??
+  p.price ??
+  0;
 
-      id: product.id,
+  const mrp =
+  p.mrp ?? price;
 
-      name: product.name,
+  return `
+  <div class="product">
 
-      price:
-        Number(
-          product.offer_price ||
-          product.mrp ||
-          0
-        ),
+    <img src="${image}"
+         onerror="this.style.display='none'">
 
-      qty: 1,
+    <div class="info">
 
-      deeplink:
-        product.deeplink || ""
-
-    });
-  }
-
-  updateCart();
-
-}
-
-
-function updateCart() {
-
-  const count =
-    cart.reduce(
-      (total, item) =>
-        total + item.qty,
-      0
-    );
-
-  document
-    .getElementById("cartCount")
-    .innerText = count;
-}
-
-
-function showCart() {
-
-  const app =
-    document.getElementById("app");
-
-  if (cart.length === 0) {
-
-    alert("Cart empty hai 🛒");
-
-    return;
-  }
-
-  let html = `
-
-    <button
-      class="back"
-      onclick="goBack()"
-    >
-      ← Back to Products
-    </button>
-
-    <h2>🛒 Your Cart</h2>
-
-  `;
-
-  let total = 0;
-
-  cart.forEach((item, index) => {
-
-    const amount =
-      item.price * item.qty;
-
-    total += amount;
-
-    html += `
-
-      <div class="cartItem">
-
-        <div class="cartName">
-          ${item.name}
-        </div>
-
-        <div>
-          ₹${item.price}
-        </div>
-
-        <div class="qty">
-
-          <button
-            onclick="changeQty(${index}, -1)"
-          >
-            −
-          </button>
-
-          <strong>
-            ${item.qty}
-          </strong>
-
-          <button
-            onclick="changeQty(${index}, 1)"
-          >
-            +
-          </button>
-
-        </div>
-
-        <div style="margin-top:8px;">
-          Item total:
-          <strong>
-            ₹${amount.toFixed(2)}
-          </strong>
-        </div>
-
+      <div class="brand">
+        ${escapeHTML(brand)}
       </div>
 
-    `;
-  });
+      <div class="name">
+        ${escapeHTML(name)}
+      </div>
 
-  html += `
+      <div class="qty">
+        ${escapeHTML(quantity)}
+      </div>
 
-    <div class="total">
+      <div>
+        <span class="price">₹${price}</span>
+        <span class="mrp">₹${mrp}</span>
+      </div>
 
-      Total:
-      ₹${total.toFixed(2)}
+      <button
+        class="add"
+        onclick="addToCart(${index})">
+        Add
+      </button>
 
     </div>
 
-    <button
-      class="checkout"
-      onclick="checkout()"
-    >
-      Proceed to Checkout →
-    </button>
-
+  </div>
   `;
+}
 
-  app.innerHTML = html;
+
+function addToCart(index){
+
+  const p =
+  currentProducts[index];
+
+  const id =
+  p.id ||
+  p.product_id ||
+  p.name;
+
+  const existing =
+  cart.find(x => x.id == id);
+
+  if(existing){
+
+    existing.qty++;
+
+  }else{
+
+    cart.push({
+
+      id:id,
+
+      name:p.name || "Product",
+
+      brand:p.brand || "",
+
+      image:p.image ||
+            p.image_url ||
+            p.imageUrl ||
+            "",
+
+      quantity:p.quantity || "",
+
+      price:Number(
+        p.offer_price ??
+        p.offerPrice ??
+        p.price ??
+        0
+      ),
+
+      qty:1
+
+    });
+
+  }
+
+  saveCart();
 
 }
 
 
-function changeQty(index, change) {
+function changeQty(index,change){
 
   cart[index].qty += change;
 
-  if (cart[index].qty <= 0) {
+  if(cart[index].qty <= 0){
 
-    cart.splice(index, 1);
+    cart.splice(index,1);
+
   }
 
-  updateCart();
+  saveCart();
 
   showCart();
 
 }
 
 
-function goBack() {
+function saveCart(){
 
-  location.reload();
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
+
+  updateCartCount();
 
 }
 
 
-function checkout() {
+function updateCartCount(){
 
-  alert(
-    "Checkout next step me banayenge 🚀"
+  const count =
+  cart.reduce(
+    (sum,item) => sum + item.qty,
+    0
   );
+
+  document.getElementById("cartCount").innerText =
+  count;
+
+}
+
+
+function cartTotal(){
+
+  return cart.reduce(
+    (sum,item) =>
+    sum + item.price * item.qty,
+    0
+  );
+
+}
+
+
+function showCart(){
+
+  if(!cart.length){
+
+    document.getElementById("app").innerHTML = `
+
+      <div class="screen">
+
+        <div class="card">
+
+          <h2>🛒 Your Cart</h2>
+
+          <p>Cart abhi empty hai.</p>
+
+          <button
+            class="primary"
+            onclick="location.reload()">
+            Continue Shopping
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  document.getElementById("app").innerHTML = `
+
+    <div class="screen">
+
+      <button
+        class="back"
+        onclick="location.reload()">
+        ← Continue Shopping
+      </button>
+
+      <div class="card">
+
+        <h2>🛒 Your Cart</h2>
+
+        ${cart.map((item,index)=>`
+
+          <div class="cartitem">
+
+            <img
+              src="${item.image}"
+              onerror="this.style.display='none'"
+            >
+
+            <div class="cartinfo">
+
+              <b>
+                ${escapeHTML(item.name)}
+              </b>
+
+              <div class="small">
+                ${escapeHTML(item.quantity)}
+              </div>
+
+              <div>
+                ₹${item.price}
+              </div>
+
+            </div>
+
+            <div class="controls">
+
+              <button
+                onclick="changeQty(${index},-1)">
+                −
+              </button>
+
+              <strong>
+                ${item.qty}
+              </strong>
+
+              <button
+                onclick="changeQty(${index},1)">
+                +
+              </button>
+
+            </div>
+
+          </div>
+
+        `).join("")}
+
+        <div class="total">
+          Total: ₹${cartTotal().toFixed(2)}
+        </div>
+
+      </div>
+
+      <button
+        class="primary"
+        onclick="showCheckout()">
+        Proceed to Checkout →
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+
+function showCheckout(){
+
+  document.getElementById("app").innerHTML = `
+
+    <div class="screen">
+
+      <button
+        class="back"
+        onclick="showCart()">
+        ← Back to Cart
+      </button>
+
+      <div class="card">
+
+        <h2>📍 Delivery Address</h2>
+
+        <label>Full Name</label>
+
+        <input
+          id="name"
+          placeholder="Enter your name"
+        >
+
+        <label>Mobile Number</label>
+
+        <input
+          id="mobile"
+          type="tel"
+          maxlength="10"
+          placeholder="10 digit mobile number"
+        >
+
+        <label>House / Flat / Building</label>
+
+        <input
+          id="house"
+          placeholder="House no. / Flat no."
+        >
+
+        <label>Area / Street</label>
+
+        <input
+          id="area"
+          placeholder="Area / Street"
+        >
+
+        <label>City</label>
+
+        <input
+          id="city"
+          placeholder="City"
+        >
+
+        <label>PIN Code</label>
+
+        <input
+          id="pincode"
+          type="number"
+          maxlength="6"
+          placeholder="PIN Code"
+        >
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>💳 Payment Method</h2>
+
+        <label class="payment">
+
+          <input
+            type="radio"
+            name="payment"
+            value="cod"
+            checked
+          >
+
+          Cash on Delivery
+
+        </label>
+
+
+        <label class="payment">
+
+          <input
+            type="radio"
+            name="payment"
+            value="upi"
+          >
+
+          UPI
+
+        </label>
+
+
+        <label class="payment">
+
+          <input
+            type="radio"
+            name="payment"
+            value="card"
+          >
+
+          Debit / Credit Card
+
+        </label>
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>📦 Order Summary</h2>
+
+        ${cart.map(item=>`
+
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            margin:8px 0;
+          ">
+
+            <span>
+              ${escapeHTML(item.name)}
+              × ${item.qty}
+            </span>
+
+            <b>
+              ₹${(
+                item.price * item.qty
+              ).toFixed(2)}
+            </b>
+
+          </div>
+
+        `).join("")}
+
+        <hr>
+
+        <div class="total">
+          Total: ₹${cartTotal().toFixed(2)}
+        </div>
+
+      </div>
+
+
+      <button
+        class="primary"
+        onclick="placeOrder()">
+
+        🛍️ Place Order
+
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+
+function placeOrder(){
+
+  const name =
+  document.getElementById("name")
+  .value.trim();
+
+  const mobile =
+  document.getElementById("mobile")
+  .value.trim();
+
+  const house =
+  document.getElementById("house")
+  .value.trim();
+
+  const area =
+  document.getElementById("area")
+  .value.trim();
+
+  const city =
+  document.getElementById("city")
+  .value.trim();
+
+  const pincode =
+  document.getElementById("pincode")
+  .value.trim();
+
+  const payment =
+  document.querySelector(
+    'input[name="payment"]:checked'
+  ).value;
+
+
+  if(
+    !name ||
+    !mobile ||
+    !house ||
+    !area ||
+    !city ||
+    !pincode
+  ){
+
+    alert(
+      "Please complete delivery address."
+    );
+
+    return;
+  }
+
+
+  if(!/^[0-9]{10}$/.test(mobile)){
+
+    alert(
+      "Mobile number 10 digits ka hona chahiye."
+    );
+
+    return;
+  }
+
+
+  if(!/^[0-9]{6}$/.test(pincode)){
+
+    alert(
+      "PIN code 6 digits ka hona chahiye."
+    );
+
+    return;
+  }
+
+
+  const orderNumber =
+  "GB" +
+  Date.now().toString().slice(-8);
+
+
+  const order = {
+
+    orderNumber:orderNumber,
+
+    customer:{
+      name:name,
+      mobile:mobile
+    },
+
+    address:{
+      house:house,
+      area:area,
+      city:city,
+      pincode:pincode
+    },
+
+    payment:payment,
+
+    items:cart,
+
+    total:cartTotal(),
+
+    createdAt:
+    new Date().toISOString()
+
+  };
+
+
+  localStorage.setItem(
+    "lastOrder",
+    JSON.stringify(order)
+  );
+
+
+  cart = [];
+
+  saveCart();
+
+  showSuccess(order);
+
+}
+
+
+function showSuccess(order){
+
+  document.getElementById("app").innerHTML = `
+
+    <div class="screen">
+
+      <div class="card success">
+
+        <div class="icon">
+          ✅
+        </div>
+
+        <h1>
+          Order Placed!
+        </h1>
+
+        <p>
+          Thank you
+          ${escapeHTML(order.customer.name)}
+        </p>
+
+        <h3>
+          Order #${order.orderNumber}
+        </h3>
+
+        <p>
+          Total Amount:
+          <b>
+            ₹${order.total.toFixed(2)}
+          </b>
+        </p>
+
+        <p class="small">
+          Payment:
+          ${paymentName(order.payment)}
+        </p>
+
+        <br>
+
+        <button
+          class="primary"
+          onclick="location.reload()">
+
+          🛒 Continue Shopping
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+function paymentName(payment){
+
+  if(payment === "cod")
+    return "Cash on Delivery";
+
+  if(payment === "upi")
+    return "UPI";
+
+  return "Debit / Credit Card";
+
+}
+
+
+function escapeHTML(value){
+
+  return String(value || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
