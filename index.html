@@ -31,6 +31,7 @@
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 16px;
+      box-sizing: border-box;
     }
 
     button {
@@ -59,7 +60,6 @@
       width: 85px;
       height: 85px;
       object-fit: contain;
-      border-radius: 8px;
     }
 
     .info {
@@ -95,7 +95,7 @@
       margin-top: 8px;
     }
 
-    .cart {
+    .cartBar {
       position: fixed;
       bottom: 15px;
       left: 15px;
@@ -106,6 +106,7 @@
       border-radius: 12px;
       text-align: center;
       font-weight: bold;
+      cursor: pointer;
     }
 
     #products {
@@ -117,54 +118,118 @@
       padding: 30px;
     }
 
-    .error {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
+    .cartItem {
+      background: white;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .cartName {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .qty {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .qty button {
+      background: #eee;
+      font-size: 18px;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+    }
+
+    .total {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .checkout {
+      width: 100%;
+      margin-top: 12px;
+      background: #0a8f3d;
+      color: white;
+      font-size: 17px;
+      padding: 15px;
+    }
+
+    .back {
+      background: #ddd;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 
 <body>
 
-<h2>🛒 Grocery Store</h2>
+<div id="app">
 
-<div class="search">
-  <input id="searchInput" placeholder="Search milk, bread, rice..." />
-  <button onclick="searchProducts()">Search</button>
+  <h2>🛒 Grocery Store</h2>
+
+  <div class="search">
+    <input
+      id="searchInput"
+      placeholder="Search milk, bread, rice..."
+    >
+    <button onclick="searchProducts()">Search</button>
+  </div>
+
+  <div id="products">
+    <div class="loading">
+      Search for a product 🔎
+    </div>
+  </div>
+
 </div>
 
-<div id="products">
-  <div class="loading">Search for a product 🔎</div>
+<div
+  class="cartBar"
+  onclick="showCart()"
+>
+  🛒 Cart:
+  <span id="cartCount">0</span>
+  items
 </div>
 
-<div class="cart" onclick="showCart()">
-  🛒 Cart: <span id="cartCount">0</span> items
-</div>
 
 <script>
 
 const tg = window.Telegram.WebApp;
+
 tg.expand();
 
-const API = "https://grocery-backend-qhoe.onrender.com/search";
+const API =
+  "https://grocery-backend-qhoe.onrender.com/search";
 
 let cart = [];
 
+
 async function searchProducts() {
 
-  const query = document
-    .getElementById("searchInput")
-    .value
-    .trim();
+  const query =
+    document
+      .getElementById("searchInput")
+      .value
+      .trim();
 
   if (!query) {
+
     alert("Product name enter karo");
+
     return;
   }
 
-  const container = document.getElementById("products");
+  const container =
+    document.getElementById("products");
 
   container.innerHTML =
     '<div class="loading">Searching... 🔎</div>';
@@ -178,44 +243,30 @@ async function searchProducts() {
       "&lat=23.2599" +
       "&lon=77.4126";
 
-    console.log("API URL:", url);
+    const response =
+      await fetch(url);
 
-    const response = await fetch(url);
-
-    console.log("HTTP Status:", response.status);
-
-    const data = await response.json();
-
-    console.log("API Response:", data);
-
-    /*
-      API response me products directly mil rahe hain.
-      Kuch API responses me products ke andar data bhi ho sakta hai,
-      isliye dono possibilities handle kar rahe hain.
-    */
+    const data =
+      await response.json();
 
     let products = [];
 
     if (Array.isArray(data.products)) {
-      products = data.products;
-    }
 
-    else if (
+      products = data.products;
+
+    } else if (
       data.data &&
       Array.isArray(data.data.products)
     ) {
+
       products = data.data.products;
     }
-
-    console.log("Products found:", products.length);
 
     if (products.length === 0) {
 
       container.innerHTML =
-        '<div class="error">' +
-        'Product nahi mila 😔<br><br>' +
-        '<small>API response mila hai, lekin products list empty hai.</small>' +
-        '</div>';
+        '<div class="loading">Product nahi mila 😔</div>';
 
       return;
     }
@@ -224,30 +275,17 @@ async function searchProducts() {
 
     products.forEach(product => {
 
-      const div = document.createElement("div");
+      const div =
+        document.createElement("div");
 
-      div.className = "product";
+      div.className =
+        "product";
 
       const image =
         product.images &&
         product.images.length
         ? product.images[0]
         : "";
-
-      const name =
-        product.name || "Unknown Product";
-
-      const brand =
-        product.brand || "";
-
-      const quantity =
-        product.quantity || "";
-
-      const price =
-        product.offer_price || product.mrp || "0";
-
-      const mrp =
-        product.mrp || "";
 
       div.innerHTML = `
 
@@ -259,30 +297,35 @@ async function searchProducts() {
         <div class="info">
 
           <div class="name">
-            ${name}
+            ${product.name || ""}
           </div>
 
           <div class="brand">
-            ${brand}
+            ${product.brand || ""}
           </div>
 
-          <div>
-            <small>${quantity}</small>
-          </div>
+          <small>
+            ${product.quantity || ""}
+          </small>
 
           <div class="price">
-            ₹${price}
+
+            ₹${product.offer_price || product.mrp}
 
             ${
-              mrp && mrp != price
-              ? `<span class="old">₹${mrp}</span>`
+              product.mrp &&
+              product.mrp != product.offer_price
+              ? `<span class="old">
+                   ₹${product.mrp}
+                 </span>`
               : ""
             }
+
           </div>
 
           <button
             class="add"
-            onclick='addToCart(${JSON.stringify(product).replace(/'/g, "&apos;")})'
+            onclick='addToCart(${JSON.stringify(product)})'
           >
             Add
           </button>
@@ -294,19 +337,14 @@ async function searchProducts() {
 
     });
 
-  }
-
-  catch (error) {
-
-    console.error("ERROR:", error);
+  } catch (error) {
 
     container.innerHTML =
-      '<div class="error">' +
-      'API connection error ❌<br><br>' +
-      '<small>' +
-      error.message +
-      '</small>' +
+      '<div class="loading">' +
+      'Connection error ❌' +
       '</div>';
+
+    console.log(error);
   }
 }
 
@@ -314,7 +352,9 @@ async function searchProducts() {
 function addToCart(product) {
 
   const existing =
-    cart.find(item => item.id === product.id);
+    cart.find(
+      item => item.id === product.id
+    );
 
   if (existing) {
 
@@ -328,18 +368,22 @@ function addToCart(product) {
 
       name: product.name,
 
-      price: Number(product.offer_price || product.mrp || 0),
+      price:
+        Number(
+          product.offer_price ||
+          product.mrp ||
+          0
+        ),
 
       qty: 1,
 
-      deeplink: product.deeplink || ""
+      deeplink:
+        product.deeplink || ""
 
     });
   }
 
   updateCart();
-
-  alert("Added to cart 🛒");
 
 }
 
@@ -348,16 +392,21 @@ function updateCart() {
 
   const count =
     cart.reduce(
-      (total, item) => total + item.qty,
+      (total, item) =>
+        total + item.qty,
       0
     );
 
-  document.getElementById("cartCount").innerText =
-    count;
+  document
+    .getElementById("cartCount")
+    .innerText = count;
 }
 
 
 function showCart() {
+
+  const app =
+    document.getElementById("app");
 
   if (cart.length === 0) {
 
@@ -366,32 +415,124 @@ function showCart() {
     return;
   }
 
+  let html = `
+
+    <button
+      class="back"
+      onclick="goBack()"
+    >
+      ← Back to Products
+    </button>
+
+    <h2>🛒 Your Cart</h2>
+
+  `;
+
   let total = 0;
 
-  let message =
-    "🛒 YOUR CART\n\n";
-
-  cart.forEach(item => {
+  cart.forEach((item, index) => {
 
     const amount =
       item.price * item.qty;
 
     total += amount;
 
-    message +=
-      item.name +
-      "\nQty: " +
-      item.qty +
-      " × ₹" +
-      item.price +
-      "\n\n";
+    html += `
+
+      <div class="cartItem">
+
+        <div class="cartName">
+          ${item.name}
+        </div>
+
+        <div>
+          ₹${item.price}
+        </div>
+
+        <div class="qty">
+
+          <button
+            onclick="changeQty(${index}, -1)"
+          >
+            −
+          </button>
+
+          <strong>
+            ${item.qty}
+          </strong>
+
+          <button
+            onclick="changeQty(${index}, 1)"
+          >
+            +
+          </button>
+
+        </div>
+
+        <div style="margin-top:8px;">
+          Item total:
+          <strong>
+            ₹${amount.toFixed(2)}
+          </strong>
+        </div>
+
+      </div>
+
+    `;
   });
 
-  message +=
-    "Total: ₹" +
-    total.toFixed(2);
+  html += `
 
-  alert(message);
+    <div class="total">
+
+      Total:
+      ₹${total.toFixed(2)}
+
+    </div>
+
+    <button
+      class="checkout"
+      onclick="checkout()"
+    >
+      Proceed to Checkout →
+    </button>
+
+  `;
+
+  app.innerHTML = html;
+
+}
+
+
+function changeQty(index, change) {
+
+  cart[index].qty += change;
+
+  if (cart[index].qty <= 0) {
+
+    cart.splice(index, 1);
+  }
+
+  updateCart();
+
+  showCart();
+
+}
+
+
+function goBack() {
+
+  location.reload();
+
+}
+
+
+function checkout() {
+
+  alert(
+    "Checkout next step me banayenge 🚀"
+  );
+
 }
 
 </script>
