@@ -3,52 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grocery App</title>
+  <title>Grocery Store</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 16px;
+      padding: 15px;
       background: #f5f5f5;
     }
 
-    h1 {
-      margin-top: 10px;
+    h2 {
+      margin-top: 5px;
     }
 
     .search {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 14px;
-      border: 0;
-      border-radius: 12px;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
       font-size: 16px;
-      margin-bottom: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .search button {
+      background: #0a8f3d;
+      color: white;
     }
 
     .product {
       background: white;
-      padding: 14px;
-      border-radius: 14px;
+      border-radius: 12px;
+      padding: 12px;
       margin-bottom: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
     }
 
-    .product h3 {
-      margin: 0 0 6px;
+    .product img {
+      width: 85px;
+      height: 85px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .info {
+      flex: 1;
+    }
+
+    .name {
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .brand {
+      color: #777;
+      font-size: 13px;
+      margin-top: 4px;
     }
 
     .price {
+      margin-top: 7px;
       font-weight: bold;
-      margin-bottom: 10px;
     }
 
-    button {
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 16px;
-      font-size: 15px;
-      cursor: pointer;
+    .old {
+      text-decoration: line-through;
+      color: #999;
+      margin-left: 6px;
+      font-weight: normal;
+    }
+
+    .add {
+      background: #0a8f3d;
+      color: white;
+      margin-top: 8px;
     }
 
     .cart {
@@ -56,94 +100,220 @@
       bottom: 15px;
       left: 15px;
       right: 15px;
-      background: #111;
+      background: #0a8f3d;
       color: white;
       padding: 15px;
-      border-radius: 14px;
+      border-radius: 12px;
       text-align: center;
       font-weight: bold;
+    }
+
+    #products {
+      padding-bottom: 80px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>🛒 Grocery Store</h1>
+  <h2>🛒 Grocery Store</h2>
 
-  <input
-    class="search"
-    id="search"
-    placeholder="Search groceries..."
-    oninput="searchProducts()"
-  >
+  <div class="search">
+    <input id="searchInput" placeholder="Search milk, bread, rice..." />
+    <button onclick="searchProducts()">Search</button>
+  </div>
 
-  <div id="products"></div>
+  <div id="products">
+    <div class="loading">Search for a product 🔎</div>
+  </div>
 
-  <div class="cart" onclick="openCart()">
-    🛒 Cart: <span id="cartCount">0</span>
+  <div class="cart" onclick="showCart()">
+    🛒 Cart: <span id="cartCount">0</span> items
   </div>
 
 <script>
-const products = [
-  {name: "🥛 Milk 1L", price: 60},
-  {name: "🍞 Bread", price: 40},
-  {name: "🥚 Eggs 6 pcs", price: 55},
-  {name: "🍚 Rice 5kg", price: 350},
-  {name: "🥔 Potato 1kg", price: 35},
-  {name: "🍅 Tomato 1kg", price: 40},
-  {name: "🍎 Apple 1kg", price: 150},
-  {name: "🍌 Banana 1 dozen", price: 60}
-];
+
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const API =
+  "https://grocery-backend-qhoe.onrender.com/search";
 
 let cart = [];
 
-function showProducts(list = products) {
-  const container = document.getElementById("products");
-  container.innerHTML = "";
+async function searchProducts() {
 
-  list.forEach((product, index) => {
-    container.innerHTML += `
-      <div class="product">
-        <h3>${product.name}</h3>
-        <div class="price">₹${product.price}</div>
-        <button onclick="addToCart(${index})">
-          ➕ Add to Cart
-        </button>
-      </div>
-    `;
-  });
-}
+  const query =
+    document.getElementById("searchInput").value.trim();
 
-function addToCart(index) {
-  cart.push(products[index]);
-  document.getElementById("cartCount").innerText = cart.length;
-}
-
-function searchProducts() {
-  const query = document.getElementById("search").value.toLowerCase();
-
-  const filtered = products.filter(product =>
-    product.name.toLowerCase().includes(query)
-  );
-
-  showProducts(filtered);
-}
-
-function openCart() {
-  if (cart.length === 0) {
-    alert("Cart empty hai 🛒");
+  if (!query) {
+    alert("Product name enter karo");
     return;
   }
 
-  let total = cart.reduce((sum, item) => sum + item.price, 0);
+  const container =
+    document.getElementById("products");
 
-  alert(
-    "Cart items: " + cart.length +
-    "\\nTotal: ₹" + total
-  );
+  container.innerHTML =
+    '<div class="loading">Searching... 🔎</div>';
+
+  try {
+
+    const url =
+      API +
+      "?q=" +
+      encodeURIComponent(query) +
+      "&lat=23.2599&lon=77.4126";
+
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    if (!data.products || data.products.length === 0) {
+      container.innerHTML =
+        "<div class='loading'>Product nahi mila 😔</div>";
+      return;
+    }
+
+    container.innerHTML = "";
+
+    data.products.forEach(product => {
+
+      const div =
+        document.createElement("div");
+
+      div.className = "product";
+
+      div.innerHTML = `
+
+        <img src="${product.images?.[0] || ''}"
+             onerror="this.style.display='none'">
+
+        <div class="info">
+
+          <div class="name">
+            ${product.name}
+          </div>
+
+          <div class="brand">
+            ${product.brand || ""}
+          </div>
+
+          <div>
+            <small>
+              ${product.quantity || ""}
+            </small>
+          </div>
+
+          <div class="price">
+            ₹${product.offer_price}
+
+            ${
+              product.mrp &&
+              product.mrp != product.offer_price
+              ? `<span class="old">₹${product.mrp}</span>`
+              : ""
+            }
+          </div>
+
+          <button
+            class="add"
+            onclick='addToCart(${JSON.stringify(product)})'>
+            Add
+          </button>
+
+        </div>
+      `;
+
+      container.appendChild(div);
+
+    });
+
+  } catch (error) {
+
+    container.innerHTML =
+      "<div class='loading'>Something went wrong ❌</div>";
+
+    console.log(error);
+  }
 }
 
-showProducts();
+
+function addToCart(product) {
+
+  const existing =
+    cart.find(item => item.id === product.id);
+
+  if (existing) {
+
+    existing.qty++;
+
+  } else {
+
+    cart.push({
+      id: product.id,
+      name: product.name,
+      price: Number(product.offer_price),
+      qty: 1,
+      deeplink: product.deeplink
+    });
+
+  }
+
+  updateCart();
+
+}
+
+
+function updateCart() {
+
+  const count =
+    cart.reduce(
+      (total, item) => total + item.qty,
+      0
+    );
+
+  document.getElementById("cartCount").innerText =
+    count;
+}
+
+
+function showCart() {
+
+  if (cart.length === 0) {
+
+    alert("Cart empty hai 🛒");
+    return;
+
+  }
+
+  let total = 0;
+  let message = "🛒 YOUR CART\n\n";
+
+  cart.forEach(item => {
+
+    const amount =
+      item.price * item.qty;
+
+    total += amount;
+
+    message +=
+      `${item.name}\n` +
+      `Qty: ${item.qty} × ₹${item.price}\n\n`;
+
+  });
+
+  message +=
+    `Total: ₹${total.toFixed(2)}`;
+
+  alert(message);
+}
+
 </script>
 
 </body>
