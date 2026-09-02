@@ -1,287 +1,132 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grocery Store</title>
-
-<style>
-*{
-  box-sizing:border-box;
-  font-family:Arial,sans-serif;
-}
-
-body{
-  margin:0;
-  background:#f5f5f5;
-  color:#222;
-}
+<title>Grocery Store</title><style>
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f5f5f5;color:#222}
 
 header{
-  background:#0c8f3d;
-  color:white;
-  padding:16px;
-  font-size:22px;
-  font-weight:bold;
-  position:sticky;
-  top:0;
-  z-index:10;
+  background:#0c8f3d;color:white;padding:16px;font-size:22px;
+  font-weight:bold;position:sticky;top:0;z-index:10
 }
 
-.search{
-  padding:12px;
-  background:white;
-}
-
+.search{padding:12px;background:white}
 .search input{
-  width:100%;
-  padding:13px;
-  border:1px solid #ddd;
-  border-radius:8px;
-  font-size:16px;
+  width:100%;padding:13px;border:1px solid #ddd;
+  border-radius:8px;font-size:16px
 }
 
-.products{
-  padding:10px;
-  padding-bottom:90px;
-}
+.products{padding:10px;padding-bottom:90px}
 
 .product{
-  background:white;
-  margin-bottom:10px;
-  padding:10px;
-  border-radius:10px;
-  display:flex;
-  gap:12px;
+  background:white;margin-bottom:10px;padding:10px;border-radius:10px;
+  display:flex;gap:12px
 }
 
 .product img{
-  width:90px;
-  height:90px;
-  object-fit:contain;
+  width:90px;height:90px;object-fit:contain
 }
 
-.info{
-  flex:1;
-}
-
-.brand{
-  font-size:12px;
-  color:#777;
-}
-
-.name{
-  font-weight:bold;
-  margin:4px 0;
-}
-
-.qty{
-  font-size:13px;
-  color:#666;
-}
-
-.price{
-  font-weight:bold;
-  font-size:18px;
-}
-
-.mrp{
-  text-decoration:line-through;
-  color:#999;
-  font-size:13px;
-  margin-left:5px;
-}
+.info{flex:1}
+.brand{font-size:12px;color:#777}
+.name{font-weight:bold;margin:4px 0}
+.qty{font-size:13px;color:#666}
+.price{font-weight:bold;font-size:18px}
+.mrp{text-decoration:line-through;color:#999;font-size:13px;margin-left:5px}
 
 button{
-  border:0;
-  border-radius:7px;
-  padding:9px 13px;
-  cursor:pointer;
+  border:0;border-radius:7px;padding:9px 13px;cursor:pointer
 }
 
-.add{
-  background:#0c8f3d;
-  color:white;
-  margin-top:7px;
-}
+.add{background:#0c8f3d;color:white;margin-top:7px}
 
 .cartbar{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:white;
-  padding:12px;
-  box-shadow:0 -2px 10px #bbb;
-  z-index:20;
+  position:fixed;bottom:0;left:0;right:0;background:white;padding:12px;
+  box-shadow:0 -2px 10px #bbb;z-index:20
 }
 
-.cartbtn,
-.primary{
-  width:100%;
-  background:#0c8f3d;
-  color:white;
-  font-size:17px;
-  font-weight:bold;
-  padding:14px;
+.cartbtn,.primary{
+  width:100%;background:#0c8f3d;color:white;font-size:17px;
+  font-weight:bold;padding:14px
 }
 
-.screen{
-  padding:15px;
-  padding-bottom:30px;
-}
+.screen{padding:15px;padding-bottom:30px}
 
-.back{
-  background:#ddd;
-  margin-bottom:12px;
-}
+.back{background:#ddd;margin-bottom:12px}
 
 .card{
-  background:white;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:12px;
+  background:white;padding:15px;border-radius:10px;margin-bottom:12px
 }
 
 .cartitem{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  border-bottom:1px solid #eee;
-  padding:10px 0;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid #eee;padding:10px 0
 }
 
 .cartitem img{
-  width:60px;
-  height:60px;
-  object-fit:contain;
+  width:60px;height:60px;object-fit:contain
 }
 
-.cartinfo{
-  flex:1;
-}
+.cartinfo{flex:1}
 
 .controls{
-  display:flex;
-  align-items:center;
-  gap:10px;
+  display:flex;align-items:center;gap:10px
 }
 
 .controls button{
-  background:#e8f5ed;
-  color:#087a35;
-  font-size:20px;
-  width:38px;
-  height:38px;
-  padding:0;
-  font-weight:bold;
-}
-
-.total{
-  font-size:20px;
-  font-weight:bold;
-  margin-top:12px;
+  background:#e8f5ed;color:#087a35;font-size:20px;
+  width:38px;height:38px;padding:0;font-weight:bold
 }
 
 .row{
-  display:flex;
-  justify-content:space-between;
-  margin:9px 0;
+  display:flex;justify-content:space-between;margin:9px 0
 }
 
-.delivery{
-  color:#0c8f3d;
-  font-weight:bold;
-}
+.delivery{color:#0c8f3d;font-weight:bold}
 
 .grand{
-  font-size:22px;
-  font-weight:bold;
-  border-top:1px solid #ddd;
-  padding-top:12px;
-  margin-top:12px;
+  font-size:22px;font-weight:bold;border-top:1px solid #ddd;
+  padding-top:12px;margin-top:12px
 }
 
 input{
-  width:100%;
-  padding:12px;
-  margin:6px 0 12px;
-  border:1px solid #ddd;
-  border-radius:7px;
-  font-size:15px;
+  width:100%;padding:12px;margin:6px 0 12px;
+  border:1px solid #ddd;border-radius:7px;font-size:15px
 }
 
-label{
-  font-weight:bold;
-  font-size:14px;
-}
+label{font-weight:bold;font-size:14px}
 
 .payment{
-  border:1px solid #ddd;
-  padding:14px;
-  border-radius:8px;
-  margin:8px 0;
-  display:block;
+  border:1px solid #ddd;padding:14px;border-radius:8px;
+  margin:8px 0;display:block
 }
 
-.payment input{
-  width:auto;
-  margin:0 8px 0 0;
-}
+.payment input{width:auto;margin:0 8px 0 0}
 
-.success{
-  text-align:center;
-  padding:30px 10px;
-}
-
-.success .icon{
-  font-size:65px;
-}
-
-.small{
-  color:#777;
-  font-size:13px;
-}
+.success{text-align:center;padding:30px 10px}
+.success .icon{font-size:65px}
+.small{color:#777;font-size:13px}
 
 .notice{
-  background:#fff8df;
-  padding:12px;
-  border-radius:8px;
-  font-size:13px;
-  margin-bottom:12px;
+  background:#fff8df;padding:12px;border-radius:8px;
+  font-size:13px;margin-bottom:12px
 }
-</style>
-</head>
-
-<body>
-
-<header>🛒 Grocery Store</header>
-
-<div id="app">
-
-  <div class="search">
+</style></head><body><header>🛒 Grocery Store</header><div id="app">  <div class="search">
     <input
       id="searchInput"
       placeholder="Search milk, bread, rice..."
       onkeydown="if(event.key==='Enter') searchProducts()"
     >
-  </div>
-
-  <div class="products" id="products">
+  </div>  <div class="products" id="products">
     <div class="card">
       Search for products 🔎
     </div>
-  </div>
-
-</div>
-
-<div class="cartbar">
+  </div></div><div class="cartbar">
   <button class="cartbtn" onclick="showCart()">
     🛒 Cart (<span id="cartCount">0</span>)
   </button>
-</div>
-
-<script>
+</div><script>
 
 const API =
 "https://grocery-backend-qhoe.onrender.com/search";
@@ -351,13 +196,28 @@ async function searchProducts(){
 }
 
 
-function productHTML(p,index){
+function getImage(p){
 
-  const image =
+  return (
     p.image ||
     p.image_url ||
     p.imageUrl ||
-    "";
+    p.image?.url ||
+    p.image?.src ||
+    p.images?.[0] ||
+    p.images?.[0]?.url ||
+    p.images?.[0]?.src ||
+    p.product_image ||
+    p.productImage ||
+    ""
+  );
+
+}
+
+
+function productHTML(p,index){
+
+  const image = getImage(p);
 
   const name =
     p.name || "Product";
@@ -382,7 +242,7 @@ function productHTML(p,index){
     <div class="product">
 
       <img
-        src="${image}"
+        src="${escapeHTML(image)}"
         onerror="this.style.display='none'"
       >
 
@@ -456,11 +316,7 @@ function addToCart(index){
 
       brand:p.brand || "",
 
-      image:
-        p.image ||
-        p.image_url ||
-        p.imageUrl ||
-        "",
+      image:getImage(p),
 
       quantity:p.quantity || "",
 
@@ -540,13 +396,9 @@ function subtotal(){
 
 function deliveryCharge(){
 
-  if(subtotal() >= 500){
-
-    return 0;
-
-  }
-
-  return DELIVERY_CHARGE;
+  return subtotal() >= 500
+    ? 0
+    : DELIVERY_CHARGE;
 
 }
 
@@ -614,7 +466,7 @@ function showCart(){
           <div class="cartitem">
 
             <img
-              src="${item.image}"
+              src="${escapeHTML(item.image)}"
               onerror="this.style.display='none'"
             >
 
@@ -729,9 +581,7 @@ function showCheckout(){
 
         <h2>📍 Delivery Address</h2>
 
-        <label>
-          Full Name
-        </label>
+        <label>Full Name</label>
 
         <input
           id="name"
@@ -739,9 +589,7 @@ function showCheckout(){
         >
 
 
-        <label>
-          Mobile Number
-        </label>
+        <label>Mobile Number</label>
 
         <input
           id="mobile"
@@ -751,9 +599,7 @@ function showCheckout(){
         >
 
 
-        <label>
-          House / Flat / Building
-        </label>
+        <label>House / Flat / Building</label>
 
         <input
           id="house"
@@ -761,9 +607,7 @@ function showCheckout(){
         >
 
 
-        <label>
-          Area / Street
-        </label>
+        <label>Area / Street</label>
 
         <input
           id="area"
@@ -771,9 +615,7 @@ function showCheckout(){
         >
 
 
-        <label>
-          City
-        </label>
+        <label>City</label>
 
         <input
           id="city"
@@ -781,9 +623,7 @@ function showCheckout(){
         >
 
 
-        <label>
-          PIN Code
-        </label>
+        <label>PIN Code</label>
 
         <input
           id="pincode"
@@ -798,7 +638,6 @@ function showCheckout(){
       <div class="card">
 
         <h2>💳 Payment Method</h2>
-
 
         <label class="payment">
 
@@ -846,7 +685,6 @@ function showCheckout(){
 
         <h2>📦 Order Summary</h2>
 
-
         ${cart.map(item=>`
 
           <div class="row">
@@ -873,9 +711,7 @@ function showCheckout(){
 
         <div class="row">
 
-          <span>
-            Subtotal
-          </span>
+          <span>Subtotal</span>
 
           <b>
             ₹${subtotal().toFixed(2)}
@@ -886,9 +722,7 @@ function showCheckout(){
 
         <div class="row">
 
-          <span>
-            Delivery
-          </span>
+          <span>Delivery</span>
 
           <b class="delivery">
 
@@ -1073,22 +907,18 @@ function showSuccess(order){
           ✅
         </div>
 
-
         <h1>
           Order Placed!
         </h1>
-
 
         <p>
           Thank you
           ${escapeHTML(order.customer.name)}
         </p>
 
-
         <h3>
           Order #${order.orderNumber}
         </h3>
-
 
         <p>
           Order Total:
@@ -1097,14 +927,12 @@ function showSuccess(order){
           </b>
         </p>
 
-
         <p class="small">
 
           Payment:
           ${paymentName(order.payment)}
 
         </p>
-
 
         <p class="small">
 
@@ -1115,9 +943,7 @@ function showSuccess(order){
 
         </p>
 
-
         <br>
-
 
         <button
           class="primary"
@@ -1162,7 +988,6 @@ function escapeHTML(value){
 
 }
 
-</script>
-
-</body>
+</script></body>
 </html>
+
