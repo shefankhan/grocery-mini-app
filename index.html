@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -59,7 +59,6 @@ header{
   width:90px;
   height:90px;
   object-fit:contain;
-  border-radius:8px;
 }
 
 .info{
@@ -117,12 +116,14 @@ button{
   z-index:20;
 }
 
-.cartbtn{
+.cartbtn,
+.primary{
   width:100%;
   background:#0c8f3d;
   color:white;
   font-size:17px;
   font-weight:bold;
+  padding:14px;
 }
 
 .screen{
@@ -182,16 +183,26 @@ button{
   margin-top:12px;
 }
 
-.primary{
-  width:100%;
-  background:#0c8f3d;
-  color:white;
-  font-size:17px;
-  padding:14px;
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin:9px 0;
+}
+
+.delivery{
+  color:#0c8f3d;
   font-weight:bold;
 }
 
-input, textarea, select{
+.grand{
+  font-size:22px;
+  font-weight:bold;
+  border-top:1px solid #ddd;
+  padding-top:12px;
+  margin-top:12px;
+}
+
+input{
   width:100%;
   padding:12px;
   margin:6px 0 12px;
@@ -230,6 +241,14 @@ label{
 .small{
   color:#777;
   font-size:13px;
+}
+
+.notice{
+  background:#fff8df;
+  padding:12px;
+  border-radius:8px;
+  font-size:13px;
+  margin-bottom:12px;
 }
 </style>
 </head>
@@ -272,6 +291,8 @@ JSON.parse(localStorage.getItem("cart") || "[]");
 
 let currentProducts = [];
 
+const DELIVERY_CHARGE = 30;
+
 updateCartCount();
 
 
@@ -301,9 +322,9 @@ async function searchProducts(){
     await response.json();
 
     currentProducts =
-    data.products ||
-    data.data?.products ||
-    [];
+      data.products ||
+      data.data?.products ||
+      [];
 
     if(!currentProducts.length){
 
@@ -314,96 +335,112 @@ async function searchProducts(){
     }
 
     box.innerHTML =
-    currentProducts.map(
-      (p,index) => productHTML(p,index)
-    ).join("");
+      currentProducts
+      .map((p,index) => productHTML(p,index))
+      .join("");
 
   }catch(error){
 
     console.log(error);
 
     box.innerHTML =
-    '<div class="card">❌ Server error. Thodi der baad try karo.</div>';
+    '<div class="card">❌ Server error</div>';
+
   }
+
 }
 
 
 function productHTML(p,index){
 
   const image =
-  p.image ||
-  p.image_url ||
-  p.imageUrl ||
-  "";
+    p.image ||
+    p.image_url ||
+    p.imageUrl ||
+    "";
 
   const name =
-  p.name || "Product";
+    p.name || "Product";
 
   const brand =
-  p.brand || "";
+    p.brand || "";
 
   const quantity =
-  p.quantity || "";
+    p.quantity || "";
 
   const price =
-  p.offer_price ??
-  p.offerPrice ??
-  p.price ??
-  0;
+    p.offer_price ??
+    p.offerPrice ??
+    p.price ??
+    0;
 
   const mrp =
-  p.mrp ?? price;
+    p.mrp ?? price;
 
   return `
-  <div class="product">
 
-    <img src="${image}"
-         onerror="this.style.display='none'">
+    <div class="product">
 
-    <div class="info">
+      <img
+        src="${image}"
+        onerror="this.style.display='none'"
+      >
 
-      <div class="brand">
-        ${escapeHTML(brand)}
+      <div class="info">
+
+        <div class="brand">
+          ${escapeHTML(brand)}
+        </div>
+
+        <div class="name">
+          ${escapeHTML(name)}
+        </div>
+
+        <div class="qty">
+          ${escapeHTML(quantity)}
+        </div>
+
+        <div>
+
+          <span class="price">
+            ₹${price}
+          </span>
+
+          <span class="mrp">
+            ₹${mrp}
+          </span>
+
+        </div>
+
+        <button
+          class="add"
+          onclick="addToCart(${index})">
+
+          Add
+
+        </button>
+
       </div>
-
-      <div class="name">
-        ${escapeHTML(name)}
-      </div>
-
-      <div class="qty">
-        ${escapeHTML(quantity)}
-      </div>
-
-      <div>
-        <span class="price">₹${price}</span>
-        <span class="mrp">₹${mrp}</span>
-      </div>
-
-      <button
-        class="add"
-        onclick="addToCart(${index})">
-        Add
-      </button>
 
     </div>
 
-  </div>
   `;
+
 }
 
 
 function addToCart(index){
 
   const p =
-  currentProducts[index];
+    currentProducts[index];
 
   const id =
-  p.id ||
-  p.product_id ||
-  p.name;
+    p.id ||
+    p.product_id ||
+    p.name;
 
   const existing =
-  cart.find(x => x.id == id);
+    cart.find(item => item.id == id);
 
   if(existing){
 
@@ -419,10 +456,11 @@ function addToCart(index){
 
       brand:p.brand || "",
 
-      image:p.image ||
-            p.image_url ||
-            p.imageUrl ||
-            "",
+      image:
+        p.image ||
+        p.image_url ||
+        p.imageUrl ||
+        "",
 
       quantity:p.quantity || "",
 
@@ -476,24 +514,47 @@ function saveCart(){
 function updateCartCount(){
 
   const count =
-  cart.reduce(
-    (sum,item) => sum + item.qty,
-    0
-  );
+    cart.reduce(
+      (sum,item) =>
+      sum + item.qty,
+      0
+    );
 
-  document.getElementById("cartCount").innerText =
-  count;
+  document.getElementById(
+    "cartCount"
+  ).innerText = count;
 
 }
 
 
-function cartTotal(){
+function subtotal(){
 
   return cart.reduce(
     (sum,item) =>
     sum + item.price * item.qty,
     0
   );
+
+}
+
+
+function deliveryCharge(){
+
+  if(subtotal() >= 500){
+
+    return 0;
+
+  }
+
+  return DELIVERY_CHARGE;
+
+}
+
+
+function grandTotal(){
+
+  return subtotal() +
+         deliveryCharge();
 
 }
 
@@ -515,7 +576,9 @@ function showCart(){
           <button
             class="primary"
             onclick="location.reload()">
+
             Continue Shopping
+
           </button>
 
         </div>
@@ -525,6 +588,7 @@ function showCart(){
     `;
 
     return;
+
   }
 
 
@@ -535,8 +599,11 @@ function showCart(){
       <button
         class="back"
         onclick="location.reload()">
+
         ← Continue Shopping
+
       </button>
+
 
       <div class="card">
 
@@ -567,11 +634,14 @@ function showCart(){
 
             </div>
 
+
             <div class="controls">
 
               <button
                 onclick="changeQty(${index},-1)">
+
                 −
+
               </button>
 
               <strong>
@@ -580,7 +650,9 @@ function showCart(){
 
               <button
                 onclick="changeQty(${index},1)">
+
                 +
+
               </button>
 
             </div>
@@ -589,16 +661,46 @@ function showCart(){
 
         `).join("")}
 
-        <div class="total">
-          Total: ₹${cartTotal().toFixed(2)}
+
+        <div class="row">
+          <span>Subtotal</span>
+          <b>₹${subtotal().toFixed(2)}</b>
+        </div>
+
+
+        <div class="row">
+
+          <span>Delivery</span>
+
+          <span class="delivery">
+
+            ${
+              deliveryCharge() === 0
+              ? "FREE"
+              : "₹" + deliveryCharge()
+            }
+
+          </span>
+
+        </div>
+
+
+        <div class="grand">
+
+          Total:
+          ₹${grandTotal().toFixed(2)}
+
         </div>
 
       </div>
 
+
       <button
         class="primary"
         onclick="showCheckout()">
+
         Proceed to Checkout →
+
       </button>
 
     </div>
@@ -617,21 +719,29 @@ function showCheckout(){
       <button
         class="back"
         onclick="showCart()">
+
         ← Back to Cart
+
       </button>
+
 
       <div class="card">
 
         <h2>📍 Delivery Address</h2>
 
-        <label>Full Name</label>
+        <label>
+          Full Name
+        </label>
 
         <input
           id="name"
           placeholder="Enter your name"
         >
 
-        <label>Mobile Number</label>
+
+        <label>
+          Mobile Number
+        </label>
 
         <input
           id="mobile"
@@ -640,34 +750,46 @@ function showCheckout(){
           placeholder="10 digit mobile number"
         >
 
-        <label>House / Flat / Building</label>
+
+        <label>
+          House / Flat / Building
+        </label>
 
         <input
           id="house"
-          placeholder="House no. / Flat no."
+          placeholder="House / Flat / Building"
         >
 
-        <label>Area / Street</label>
+
+        <label>
+          Area / Street
+        </label>
 
         <input
           id="area"
           placeholder="Area / Street"
         >
 
-        <label>City</label>
+
+        <label>
+          City
+        </label>
 
         <input
           id="city"
           placeholder="City"
         >
 
-        <label>PIN Code</label>
+
+        <label>
+          PIN Code
+        </label>
 
         <input
           id="pincode"
-          type="number"
+          type="tel"
           maxlength="6"
-          placeholder="PIN Code"
+          placeholder="6 digit PIN"
         >
 
       </div>
@@ -676,6 +798,7 @@ function showCheckout(){
       <div class="card">
 
         <h2>💳 Payment Method</h2>
+
 
         <label class="payment">
 
@@ -686,7 +809,7 @@ function showCheckout(){
             checked
           >
 
-          Cash on Delivery
+          💵 Cash on Delivery
 
         </label>
 
@@ -699,7 +822,7 @@ function showCheckout(){
             value="upi"
           >
 
-          UPI
+          📱 UPI
 
         </label>
 
@@ -712,7 +835,7 @@ function showCheckout(){
             value="card"
           >
 
-          Debit / Credit Card
+          💳 Debit / Credit Card
 
         </label>
 
@@ -723,13 +846,10 @@ function showCheckout(){
 
         <h2>📦 Order Summary</h2>
 
+
         ${cart.map(item=>`
 
-          <div style="
-            display:flex;
-            justify-content:space-between;
-            margin:8px 0;
-          ">
+          <div class="row">
 
             <span>
               ${escapeHTML(item.name)}
@@ -738,7 +858,8 @@ function showCheckout(){
 
             <b>
               ₹${(
-                item.price * item.qty
+                item.price *
+                item.qty
               ).toFixed(2)}
             </b>
 
@@ -746,11 +867,55 @@ function showCheckout(){
 
         `).join("")}
 
+
         <hr>
 
-        <div class="total">
-          Total: ₹${cartTotal().toFixed(2)}
+
+        <div class="row">
+
+          <span>
+            Subtotal
+          </span>
+
+          <b>
+            ₹${subtotal().toFixed(2)}
+          </b>
+
         </div>
+
+
+        <div class="row">
+
+          <span>
+            Delivery
+          </span>
+
+          <b class="delivery">
+
+            ${
+              deliveryCharge() === 0
+              ? "FREE"
+              : "₹" + deliveryCharge()
+            }
+
+          </b>
+
+        </div>
+
+
+        <div class="grand">
+
+          Pay:
+          ₹${grandTotal().toFixed(2)}
+
+        </div>
+
+      </div>
+
+
+      <div class="notice">
+
+        ℹ️ Free delivery on orders above ₹500.
 
       </div>
 
@@ -773,33 +938,33 @@ function showCheckout(){
 function placeOrder(){
 
   const name =
-  document.getElementById("name")
-  .value.trim();
+    document.getElementById("name")
+    .value.trim();
 
   const mobile =
-  document.getElementById("mobile")
-  .value.trim();
+    document.getElementById("mobile")
+    .value.trim();
 
   const house =
-  document.getElementById("house")
-  .value.trim();
+    document.getElementById("house")
+    .value.trim();
 
   const area =
-  document.getElementById("area")
-  .value.trim();
+    document.getElementById("area")
+    .value.trim();
 
   const city =
-  document.getElementById("city")
-  .value.trim();
+    document.getElementById("city")
+    .value.trim();
 
   const pincode =
-  document.getElementById("pincode")
-  .value.trim();
+    document.getElementById("pincode")
+    .value.trim();
 
   const payment =
-  document.querySelector(
-    'input[name="payment"]:checked'
-  ).value;
+    document.querySelector(
+      'input[name="payment"]:checked'
+    ).value;
 
 
   if(
@@ -816,6 +981,7 @@ function placeOrder(){
     );
 
     return;
+
   }
 
 
@@ -826,6 +992,7 @@ function placeOrder(){
     );
 
     return;
+
   }
 
 
@@ -836,12 +1003,15 @@ function placeOrder(){
     );
 
     return;
+
   }
 
 
   const orderNumber =
-  "GB" +
-  Date.now().toString().slice(-8);
+    "GB" +
+    Date.now()
+    .toString()
+    .slice(-8);
 
 
   const order = {
@@ -864,10 +1034,14 @@ function placeOrder(){
 
     items:cart,
 
-    total:cartTotal(),
+    subtotal:subtotal(),
+
+    delivery:deliveryCharge(),
+
+    total:grandTotal(),
 
     createdAt:
-    new Date().toISOString()
+      new Date().toISOString()
 
   };
 
@@ -899,32 +1073,51 @@ function showSuccess(order){
           ✅
         </div>
 
+
         <h1>
           Order Placed!
         </h1>
+
 
         <p>
           Thank you
           ${escapeHTML(order.customer.name)}
         </p>
 
+
         <h3>
           Order #${order.orderNumber}
         </h3>
 
+
         <p>
-          Total Amount:
+          Order Total:
           <b>
             ₹${order.total.toFixed(2)}
           </b>
         </p>
 
+
         <p class="small">
+
           Payment:
           ${paymentName(order.payment)}
+
         </p>
 
+
+        <p class="small">
+
+          Delivery:
+          ${escapeHTML(order.address.city)}
+          -
+          ${escapeHTML(order.address.pincode)}
+
+        </p>
+
+
         <br>
+
 
         <button
           class="primary"
@@ -945,11 +1138,13 @@ function showSuccess(order){
 
 function paymentName(payment){
 
-  if(payment === "cod")
+  if(payment === "cod"){
     return "Cash on Delivery";
+  }
 
-  if(payment === "upi")
+  if(payment === "upi"){
     return "UPI";
+  }
 
   return "Debit / Credit Card";
 
